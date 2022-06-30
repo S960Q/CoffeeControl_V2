@@ -160,7 +160,7 @@ public class BluetoothHandler {
                     Log.i(TAG, "onCharacteristicUpdate: new Temp" + temp);
 
                     lastXTemp += 1d;
-                    tempValues.appendData(new DataPoint(lastXTemp, temp), true, 200);
+                    tempValues.appendData(new DataPoint(lastXTemp, temp), true, 500);
 
 
                 }
@@ -179,7 +179,7 @@ public class BluetoothHandler {
                     ProgressBar progress = mainActivity.findViewById(R.id.powerBar);
                     TextView progressText = mainActivity.findViewById(R.id.powerText);
                     lastXPower += 1d;
-                    powerValues2.appendData(new DataPoint(lastXPower, power), true, 200);
+                    powerValues2.appendData(new DataPoint(lastXPower, power), true, 500);
 
                     if(bar != null) {
                     progress.setProgress((int) power);

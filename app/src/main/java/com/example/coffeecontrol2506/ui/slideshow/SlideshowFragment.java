@@ -37,12 +37,12 @@ public class SlideshowFragment extends Fragment {
         binding.graph.addSeries(coffeeLeHandler.powerValues2);
         binding.graph.getViewport().setXAxisBoundsManual(true);
         binding.graph.getViewport().setMinX(0);
-        binding.graph.getViewport().setMaxX(100);
+        binding.graph.getViewport().setMaxX(500);
 
         binding.graph2.addSeries(coffeeLeHandler.tempValues);
         binding.graph2.getViewport().setXAxisBoundsManual(true);
         binding.graph2.getViewport().setMinX(0);
-        binding.graph2.getViewport().setMaxX(100);
+        binding.graph2.getViewport().setMaxX(500);
 
         }
     public View onCreateView(@NonNull LayoutInflater inflater,

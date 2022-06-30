@@ -30,7 +30,7 @@ public class SensorvalFragment extends Fragment {
     private float valKd = 0;
     private float valTemp = 0;
     public float[] kpArea = {500f,1500f};
-    public float[] kiArea = {0f,100f};
+    public float[] kiArea = {0f,5f};
     public float[] kdArea = {500f,1500f};
     public float[] tempRefArea = {80f,100f};
 
@@ -57,20 +57,20 @@ public class SensorvalFragment extends Fragment {
         binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kp));
 
         seekBarSET(kiArea,coffeeLeHandler.Ki,binding.seekBarKi);
-        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Ki));
+        binding.textKi.setText(String.format("Ki: %.2f",coffeeLeHandler.Ki));
 
         seekBarSET(kdArea,coffeeLeHandler.Kd,binding.seekBarKd);
-        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kd));
+        binding.textKd.setText(String.format("Kd: %.2f",coffeeLeHandler.Kd));
 
         seekBarSET(tempRefArea,coffeeLeHandler.tempRef,binding.seekBarTemp);
-        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.tempRef));
+        binding.textTemp.setText(String.format("Temp: %.2f",coffeeLeHandler.tempRef));
         // perform seek bar change listener event used for getting the progress value
         binding.seekBarKp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
-                valKp =  seekBarArea(kiArea,progress,seekBar);
+                valKp =  seekBarArea(kpArea,progress,seekBar);
                 //valKp = (float)progress/100;
 
                 binding.textPi.setText(String.format("Kp: %.2f", valKp));
@@ -120,7 +120,7 @@ public class SensorvalFragment extends Fragment {
             int progressChangedValue = 0;
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress; //=-1000
-                valTemp =  seekBarArea(new float[] {85,98},progress,seekBar);
+                valTemp =  seekBarArea(tempRefArea,progress,seekBar);
                 //valTemp = progress;
                 binding.textTemp.setText(String.format("Temp: %.2f°C", valTemp));
             }
@@ -137,9 +137,10 @@ public class SensorvalFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //String tp = String.valueOf((int)valKp);
-                coffeeLeHandler.writeValue(coffeeLeHandler.KP_UUID,(int)valKp*100);
-                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,(int)valTemp*100);
-                Log.d("TAG", "onClick send to KP: " +String.valueOf((int)valKp));
+                coffeeLeHandler.writeValue(coffeeLeHandler.KP_UUID,(int)valKp);
+                coffeeLeHandler.writeValue(coffeeLeHandler.KI_UUID,(int)(valKi*100));
+                coffeeLeHandler.writeValue(coffeeLeHandler.KD_UUID,(int)valKd);
+                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,(int)(valTemp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KI_UUID,String.format("%f", (int)valKp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KD_UUID,String.format("%f", (int)valKp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,String.format("%f", (int)valKp*100));
