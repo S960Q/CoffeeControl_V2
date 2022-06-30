@@ -71,7 +71,6 @@ public class HomeFragment extends Fragment {
         @Override
         public void onClick(View v) {
 
-
             if(!coffeeLeHandler.CONNECTED) coffeeLeHandler.startScan();
             else if(coffeeLeHandler.CONNECTED) coffeeLeHandler.startScan();
             //scanLeDevice();

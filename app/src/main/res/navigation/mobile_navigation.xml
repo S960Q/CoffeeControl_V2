@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/nav_gallery"
-        android:name="com.example.coffeecontrol2506.ui.gallery.GalleryFragment"
+        android:name="com.example.coffeecontrol2506.ui.gallery.SensorvalFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" />
 

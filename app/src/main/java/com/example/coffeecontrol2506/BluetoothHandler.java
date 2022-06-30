@@ -22,10 +22,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.coffeecontrol2506.databinding.ActivityMainBinding;
+import com.example.coffeecontrol2506.databinding.FragmentGalleryBinding;
 import com.example.coffeecontrol2506.databinding.FragmentHomeBinding;
 import com.example.coffeecontrol2506.ui.slideshow.SlideshowFragment;
 import com.google.android.gms.common.util.ArrayUtils;
@@ -53,6 +55,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import kotlin.reflect.KClassesImplKt;
+
 //import timber.log.Timber;
 
 public class BluetoothHandler {
@@ -63,12 +67,16 @@ public class BluetoothHandler {
     // Local variables
     public BluetoothCentralManager central;
     private FragmentHomeBinding homeBinding;
+    private FragmentGalleryBinding galleryBinding;
     private static BluetoothHandler instance = null;
     private final Context context;
     private final Handler handler = new Handler();
     private int currentTimeCounter = 0;
     public double temp = 0.0;
     public double power = 0.0;
+    public double Kp = 0.0;
+    public double Ki = 0.0;
+    public double Kd = 0.0;
     public boolean CONNECTED = false;
     private Button connectButton;
     public BluetoothPeripheral connectedPeripheral;
@@ -152,12 +160,13 @@ public class BluetoothHandler {
                         TextView text = mainActivity.findViewById(R.id.tempText);
 
                         bar.setProgress((int) temp);
-                        text.setText(String.format("%.2f%%", temp));
+                        text.setText(String.format("%.2f °C", temp));
                     }
                     Log.i(TAG, "onCharacteristicUpdate: new Temp" + temp);
 
 
-                } else if (characteristicUUID.equals(POWER_UUID)) {
+                }
+                else if (characteristicUUID.equals(POWER_UUID)) {
                     byte[] buffer = characteristic.getValue();
                     BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
@@ -166,20 +175,31 @@ public class BluetoothHandler {
                     //temp = bufferBytes.getInt();
 
 
-                    Log.i(TAG, "onCharacteristicUpdate: " + String.valueOf(power));
-                    /*temp = Double.parseDouble(message);
+                    Log.i(TAG, "onCharacteristicUpdate: " + String.valueOf(power) + "%%");
+
 
                     ProgressBar progress = mainActivity.findViewById(R.id.powerBar);
                     TextView progressText = mainActivity.findViewById(R.id.powerText);
 
                     if(bar != null) {
-                    progress.setProgress((int) temp);
-                    progressText.setText(String.format("%.2f%%", temp));
-                    Log.i(TAG, "onCharacteristicUpdate: new power" + temp);
-                    graph2LastXValue += 1d;
-                    tempValues.appendData(new DataPoint(graph2LastXValue, temp), true, 70);
-                    tmpValuesDataPoint.add(new DataPoint(graph2LastXValue, temp));
-                    }*/
+                    progress.setProgress((int) power);
+                    progressText.setText(String.format("%.2f%%", power));
+                    Log.i(TAG, "onCharacteristicUpdate: new power" + power);
+                    //graph2LastXValue += 1d;
+                    //tempValues.appendData(new DataPoint(graph2LastXValue, temp), true, 70);
+                    //tmpValuesDataPoint.add(new DataPoint(graph2LastXValue, temp));
+                    }
+
+                }
+                else if (characteristicUUID.equals(KP_UUID)) {
+                    byte[] buffer = characteristic.getValue();
+                    BluetoothBytesParser parser = new BluetoothBytesParser(value);
+
+                    int i = parser.getIntValue(FORMAT_UINT16);
+                    Ki = (double)i;
+                    if(galleryBinding != null) {
+                    galleryBinding.seekBarKp.setProgress((int) Ki);
+                    }
 
                 }
 
@@ -219,6 +239,12 @@ public class BluetoothHandler {
         @Override
         public void onConnectionFailed(@NotNull BluetoothPeripheral peripheral, final @NotNull HciStatus status) {
             Log.e(TAG,String.format("connection '%s' failed with status %s", peripheral.getName(), status));
+            CONNECTED = false;
+            connectButton = mainActivity.findViewById(R.id.searchButton);
+            if(connectButton != null) {
+                connectButton.setBackgroundColor(Color.RED);
+                connectButton.setText("Disconnected");
+            }
         }
 
         @Override
@@ -241,9 +267,9 @@ public class BluetoothHandler {
         @Override
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
             //Timber.i("Found peripheral '%s'", peripheral.getName());
-            Log.i("BLE","Found Device!");
+            //Log.i("BLE","Found Device!");
             Log.d("BLE",peripheral.getName());
-            central.stopScan();
+            //
 
             if (peripheral.getName().contains("Contour") && peripheral.getBondState() == BondState.NONE) {
                 // Create a bond immediately to avoid double pairing popups
@@ -252,6 +278,7 @@ public class BluetoothHandler {
             if(peripheral.getName().contains("CoffeeBam"))
             {
 
+                central.stopScan();
                 Log.d("BLE",peripheral.getName());
                 Log.d("BLE",peripheral.getAddress());
                 central.connectPeripheral(peripheral, peripheralCallback);
@@ -259,7 +286,7 @@ public class BluetoothHandler {
             else {
                 //central.connectPeripheral(peripheral, peripheralCallback);
                 Log.i("BLE", "onDiscoveredPeripheral: No Device found");
-                Toast.makeText(mainActivity, "No Device Found", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mainActivity, "No Device Found", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -286,9 +313,27 @@ public class BluetoothHandler {
         connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, POWER_UUID);
     }
 
-    public void writeValue(UUID characteristicUUID, String data)
+    public void readControllerVals()
     {
-        if(connectedPeripheral != null) connectedPeripheral.writeCharacteristic(COFFEE_SERVICE_UUID, characteristicUUID, data.getBytes(StandardCharsets.UTF_8),WriteType.WITH_RESPONSE);
+        connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KI_UUID);
+        connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KP_UUID);
+        connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KD_UUID);
+    }
+
+
+
+    private static byte[] intToBytes(final int data) {
+        return new byte[] {
+                //(byte)((data >> 24) & 0xff),
+                //(byte)((data >> 16) & 0xff),
+                (byte)((data >> 0) & 0xff),
+                (byte)((data >> 8) & 0xff),
+        };
+    }
+
+    public void writeValue(UUID characteristicUUID, int outData)
+    {
+        if(connectedPeripheral != null) connectedPeripheral.writeCharacteristic(COFFEE_SERVICE_UUID, characteristicUUID, intToBytes(outData),WriteType.WITH_RESPONSE);
         else{
             Log.e(TAG, "writeValue: could not write, nothing connected" );
         }

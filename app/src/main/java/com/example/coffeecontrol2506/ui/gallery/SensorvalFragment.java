@@ -20,7 +20,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.Random;
 
-public class GalleryFragment extends Fragment {
+public class SensorvalFragment extends Fragment {
 
     private FragmentGalleryBinding binding;
     private SeekBar piSeekBar;
@@ -29,10 +29,18 @@ public class GalleryFragment extends Fragment {
     private float valKi = 0;
     private float valKd = 0;
     private float valTemp = 0;
+    public float[] kpArea = {0.5f,1.5f};
+    public float[] kiArea = {0.5f,3.5f};
+    public float[] kdArea = {0.5f,1.5f};
 
 
+
+    private float seekBarArea(float area[],int progress, SeekBar tmpBar)
+    {
+        return (area[0] + (float)progress/(float)tmpBar.getMax()*(area[1]-area[0]));
+
+    }
     @Override
-
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -42,8 +50,9 @@ public class GalleryFragment extends Fragment {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
+                valKp =  seekBarArea(kiArea,progress,seekBar);
                 //valKp = (float)progress/100;
-                valKp = progress;
+
                 binding.textPi.setText(String.format("Kp: %.2f", valKp));
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -60,7 +69,7 @@ public class GalleryFragment extends Fragment {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
-                valKi = (float)progress/100;
+                valKi = seekBarArea(kiArea,progress,seekBar);
                 binding.textKi.setText(String.format("Ki: %.2f", valKi));
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -76,7 +85,7 @@ public class GalleryFragment extends Fragment {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
-                valKd = (float)progress/100;
+                valKd = seekBarArea(kdArea,progress,seekBar);
                 binding.textKd.setText(String.format("Kd: %.2f", valKd));
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -89,10 +98,10 @@ public class GalleryFragment extends Fragment {
 
         binding.seekBarTemp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
-
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progressChangedValue = progress;
-                valTemp = progress;
+                progressChangedValue = progress; //=-1000
+                valTemp =  seekBarArea(new float[] {85,98},progress,seekBar);
+                //valTemp = progress;
                 binding.textTemp.setText(String.format("Temp: %.2f°C", valTemp));
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -107,9 +116,10 @@ public class GalleryFragment extends Fragment {
         binding.commitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String tp = String.valueOf((int)valKp);
-                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,tp);
-                Log.d("TAG", "onClick send to KP: " +String.valueOf((int)valKp*100));
+                //String tp = String.valueOf((int)valKp);
+                coffeeLeHandler.writeValue(coffeeLeHandler.KP_UUID,(int)valKp*100);
+                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,(int)valKp*100);
+                Log.d("TAG", "onClick send to KP: " +String.valueOf((int)valKp));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KI_UUID,String.format("%f", (int)valKp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KD_UUID,String.format("%f", (int)valKp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,String.format("%f", (int)valKp*100));
@@ -126,6 +136,8 @@ public class GalleryFragment extends Fragment {
         coffeeLeHandler =  com.example.coffeecontrol2506.BluetoothHandler.getInstance(this.getContext());
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        coffeeLeHandler.readControllerVals();
 
 
 
