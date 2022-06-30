@@ -118,7 +118,7 @@ public class SensorvalFragment extends Fragment {
             public void onClick(View v) {
                 //String tp = String.valueOf((int)valKp);
                 coffeeLeHandler.writeValue(coffeeLeHandler.KP_UUID,(int)valKp*100);
-                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,(int)valKp*100);
+                coffeeLeHandler.writeValue(coffeeLeHandler.TEMP_REF_UUID,(int)valTemp*100);
                 Log.d("TAG", "onClick send to KP: " +String.valueOf((int)valKp));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KI_UUID,String.format("%f", (int)valKp*100));
                 //coffeeLeHandler.writeValue(coffeeLeHandler.KD_UUID,String.format("%f", (int)valKp*100));

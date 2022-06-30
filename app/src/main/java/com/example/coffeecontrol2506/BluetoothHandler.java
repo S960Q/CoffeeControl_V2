@@ -110,6 +110,7 @@ public class BluetoothHandler {
 
             peripheral.setNotify(COFFEE_SERVICE_UUID, POWER_UUID, true);
             peripheral.setNotify(COFFEE_SERVICE_UUID, TEMP_UUID, true);
+            readControllerVals();
 
 
 
