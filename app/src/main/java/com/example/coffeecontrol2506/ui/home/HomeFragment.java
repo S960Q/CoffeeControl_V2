@@ -78,14 +78,7 @@ public class HomeFragment extends Fragment {
         }
     });
 
-        binding.goToValsButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            //coffeeLeHandler.writeValue();
-            Log.i("TAG", "onClick: Still Wokring*******************************");
 
-        }
-    });
 
     }
 

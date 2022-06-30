@@ -73,6 +73,7 @@ public class BluetoothHandler {
     private final Handler handler = new Handler();
     private int currentTimeCounter = 0;
     public double temp = 0.0;
+    public double tempRef = 92.0;
     public double power = 0.0;
     public double Kp = 0.0;
     public double Ki = 0.0;
@@ -156,12 +157,20 @@ public class BluetoothHandler {
                     temp = (float)i;
 
 
-                    if(bar != null) {
+                    if(bar != null && homeBinding != null) {
                         bar = mainActivity.findViewById(R.id.tempBar);
                         TextView text = mainActivity.findViewById(R.id.tempText);
 
                         bar.setProgress((int) temp);
                         text.setText(String.format("%.2f °C", temp));
+                        if(Math.abs(tempRef-temp) > 2) {
+                            homeBinding.statusButton.setBackgroundColor(Color.GREEN);
+                            homeBinding.statusButton.setText("Ready");
+                        }
+                        else {
+                            homeBinding.statusButton.setBackgroundColor(Color.RED);
+                            homeBinding.statusButton.setText("heating");
+                        }
                     }
                     Log.i(TAG, "onCharacteristicUpdate: new Temp" + temp);
 
@@ -197,11 +206,32 @@ public class BluetoothHandler {
                     BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
                     int i = parser.getIntValue(FORMAT_UINT16);
-                    Ki = (double)i;
-                    if(galleryBinding != null) {
-                    galleryBinding.seekBarKp.setProgress((int) Ki);
-                    }
+                    Kp = (double)i/100;
+                    Log.i(TAG, "onCharacteristicUpdate: New Kp" + String.valueOf(Kp));
 
+                }
+                else if (characteristicUUID.equals(KI_UUID)) {
+                    byte[] buffer = characteristic.getValue();
+                    BluetoothBytesParser parser = new BluetoothBytesParser(value);
+
+                    int i = parser.getIntValue(FORMAT_UINT16);
+                    Ki = (double)i/100;
+                    Log.i(TAG, "onCharacteristicUpdate: New Ki" + String.valueOf(Ki));
+                }
+                else if (characteristicUUID.equals(KD_UUID)) {
+                    byte[] buffer = characteristic.getValue();
+                    BluetoothBytesParser parser = new BluetoothBytesParser(value);
+                    int i = parser.getIntValue(FORMAT_UINT16);
+                    Kd = (double)i/100;
+                    Log.i(TAG, "onCharacteristicUpdate: New Kd" + String.valueOf(Kd));
+                }
+
+                else if (characteristicUUID.equals(TEMP_REF_UUID)) {
+                    byte[] buffer = characteristic.getValue();
+                    BluetoothBytesParser parser = new BluetoothBytesParser(value);
+                    int i = parser.getIntValue(FORMAT_UINT16);
+                    tempRef = (double)i/100;
+                    Log.i(TAG, "onCharacteristicUpdate: New tempRef" + String.valueOf(tempRef));
                 }
 
 
@@ -233,7 +263,7 @@ public class BluetoothHandler {
             connectButton = mainActivity.findViewById(R.id.searchButton);
             if(connectButton != null) {
                 connectButton.setBackgroundColor(Color.GREEN);
-                connectButton.setText("Disconnet");
+                connectButton.setText("Connected");
             }
         }
 
@@ -316,9 +346,14 @@ public class BluetoothHandler {
 
     public void readControllerVals()
     {
-        connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KI_UUID);
+        Log.i(TAG, "readControllerVals: Reading KI");
+        boolean sucess = connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KI_UUID);
+        Log.i(TAG, "readControllerVals: Reading KP");
         connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KP_UUID);
+        Log.i(TAG, "readControllerVals: Reading KD");
         connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, KD_UUID);
+        connectedPeripheral.readCharacteristic(COFFEE_SERVICE_UUID, TEMP_REF_UUID);
+        Log.i(TAG, "readControllerVals:" +String.valueOf(sucess));
     }
 
 

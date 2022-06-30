@@ -29,7 +29,7 @@ public class SensorvalFragment extends Fragment {
     private float valKi = 0;
     private float valKd = 0;
     private float valTemp = 0;
-    public float[] kpArea = {0.5f,1.5f};
+    public float[] kpArea = {0f,1.5f};
     public float[] kiArea = {0.5f,3.5f};
     public float[] kdArea = {0.5f,1.5f};
 
@@ -38,8 +38,17 @@ public class SensorvalFragment extends Fragment {
     private float seekBarArea(float area[],int progress, SeekBar tmpBar)
     {
         return (area[0] + (float)progress/(float)tmpBar.getMax()*(area[1]-area[0]));
-
     }
+
+    private void seekBarSET(float area[],double valToSet, SeekBar tmpBar)
+    {
+
+        double test = tmpBar.getMax()/((area[1]-area[0])/(valToSet-area[0]));
+        tmpBar.setProgress((int)test,true);
+        //return (area[0] + (float)progress/(float)tmpBar.getMax()*(area[1]-area[0]));
+    }
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -137,7 +146,10 @@ public class SensorvalFragment extends Fragment {
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        coffeeLeHandler.readControllerVals();
+        seekBarSET(kpArea,coffeeLeHandler.Kp,binding.seekBarKp);
+        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kp));
+
+        //coffeeLeHandler.readControllerVals();
 
 
 
