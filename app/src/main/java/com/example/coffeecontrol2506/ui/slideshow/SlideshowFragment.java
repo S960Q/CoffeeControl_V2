@@ -6,9 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -23,41 +25,26 @@ public class SlideshowFragment extends Fragment {
 
     private FragmentSlideshowBinding binding;
     private final Handler mHandler = new Handler();
-    private Runnable mTimer1;
     private Runnable mTimer2;
-    private LineGraphSeries<DataPoint> mSeries1;
-    public LineGraphSeries<DataPoint> mSeries2;
+    public LineGraphSeries<DataPoint> mSeries2 = new LineGraphSeries<>();
     private com.example.coffeecontrol2506.BluetoothHandler coffeeLeHandler;
-    public double graph2LastXValue = 5d;
-
-    public void onResume() {
-        super.onResume();
 
 
-        mTimer2 = new Runnable() {
-            @Override
-            public void run() {
-                graph2LastXValue += 1d;
-                //mSeries2.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 70);
-                Object[] tmpValues = coffeeLeHandler.tmpValuesDataPoint.toArray();
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-                int len = coffeeLeHandler.tmpValuesDataPoint.size();
-                DataPoint[] values = new DataPoint[len];
-                for (int i=0; i<len; i++) {
+        binding.graph.addSeries(coffeeLeHandler.powerValues2);
+        binding.graph.getViewport().setXAxisBoundsManual(true);
+        binding.graph.getViewport().setMinX(0);
+        binding.graph.getViewport().setMaxX(100);
 
-                    DataPoint v = coffeeLeHandler.tmpValuesDataPoint.get(i);
-                    values[i] = v;
-                }
-                //return values;
-                mSeries2.resetData(values);
-                mHandler.postDelayed(this, 200);
-            }
-        };
-        mHandler.postDelayed(mTimer2, 1000);
+        binding.graph2.addSeries(coffeeLeHandler.tempValues);
+        binding.graph2.getViewport().setXAxisBoundsManual(true);
+        binding.graph2.getViewport().setMinX(0);
+        binding.graph2.getViewport().setMaxX(100);
 
-    }
-
-
+        }
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SlideshowViewModel slideshowViewModel =
@@ -67,14 +54,11 @@ public class SlideshowFragment extends Fragment {
         Log.i("TAG", new String(String.valueOf(coffeeLeHandler.CONNECTED)));
         binding = FragmentSlideshowBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        mSeries2.appendData(new DataPoint(1d, 1d), true, 40);
+        //mSeries2.appendData(new DataPoint(1d, 1d), true, 40);
 
 
 
-        binding.graph2.addSeries(mSeries2);
-        binding.graph2.getViewport().setXAxisBoundsManual(true);
-        binding.graph2.getViewport().setMinX(0);
-        binding.graph2.getViewport().setMaxX(70);
+
 
         return root;
     }

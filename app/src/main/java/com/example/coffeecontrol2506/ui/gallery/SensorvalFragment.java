@@ -29,9 +29,10 @@ public class SensorvalFragment extends Fragment {
     private float valKi = 0;
     private float valKd = 0;
     private float valTemp = 0;
-    public float[] kpArea = {0f,1.5f};
-    public float[] kiArea = {0.5f,3.5f};
-    public float[] kdArea = {0.5f,1.5f};
+    public float[] kpArea = {500f,1500f};
+    public float[] kiArea = {0f,100f};
+    public float[] kdArea = {500f,1500f};
+    public float[] tempRefArea = {80f,100f};
 
 
 
@@ -52,7 +53,17 @@ public class SensorvalFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        seekBarSET(kpArea,coffeeLeHandler.Kp,binding.seekBarKp);
+        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kp));
 
+        seekBarSET(kiArea,coffeeLeHandler.Ki,binding.seekBarKi);
+        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Ki));
+
+        seekBarSET(kdArea,coffeeLeHandler.Kd,binding.seekBarKd);
+        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kd));
+
+        seekBarSET(tempRefArea,coffeeLeHandler.tempRef,binding.seekBarTemp);
+        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.tempRef));
         // perform seek bar change listener event used for getting the progress value
         binding.seekBarKp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
@@ -146,15 +157,8 @@ public class SensorvalFragment extends Fragment {
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        seekBarSET(kpArea,coffeeLeHandler.Kp,binding.seekBarKp);
-        binding.textPi.setText(String.format("Kp: %.2f",coffeeLeHandler.Kp));
-
-        //coffeeLeHandler.readControllerVals();
 
 
-
-        //final TextView textView = binding.textGallery;
-        //galleryViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 

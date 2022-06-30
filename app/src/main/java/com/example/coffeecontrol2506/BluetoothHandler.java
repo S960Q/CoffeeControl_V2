@@ -1,11 +1,6 @@
 package com.example.coffeecontrol2506;
 
-import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
-import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_FLOAT;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_SINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 import static com.welie.blessed.BluetoothBytesParser.bytes2String;
 
 import android.app.Activity;
@@ -13,24 +8,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.nfc.Tag;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.coffeecontrol2506.databinding.ActivityMainBinding;
 import com.example.coffeecontrol2506.databinding.FragmentGalleryBinding;
 import com.example.coffeecontrol2506.databinding.FragmentHomeBinding;
-import com.example.coffeecontrol2506.ui.slideshow.SlideshowFragment;
-import com.google.android.gms.common.util.ArrayUtils;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.welie.blessed.BluetoothBytesParser;
@@ -47,15 +35,8 @@ import com.welie.blessed.WriteType;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.UUID;
-
-import kotlin.reflect.KClassesImplKt;
 
 //import timber.log.Timber;
 
@@ -81,16 +62,15 @@ public class BluetoothHandler {
     public boolean CONNECTED = false;
     private Button connectButton;
     public BluetoothPeripheral connectedPeripheral;
-    private SlideshowFragment graphView;
-    public LineGraphSeries<DataPoint> tempValues;
-    public ArrayList<DataPoint> tmpValuesDataPoint = new ArrayList<DataPoint>(); // Create an ArrayList object
-    public double graph2LastXValue = 5d;
+    public LineGraphSeries<DataPoint> powerValues = new LineGraphSeries<>();
+    public LineGraphSeries<DataPoint> tempValues = new LineGraphSeries<>();
+    public LineGraphSeries<DataPoint> powerValues2 = new LineGraphSeries<>();
 
-    //private static final UUID COFFEE_SERVICE_UUID = UUID.fromString("25AE1441-05D3-4C5B-8281-93D4E07420CF");
+    public ArrayList<DataPoint> tmpValuesDataPoint = new ArrayList<DataPoint>(); // Create an ArrayList object
+    public double lastXTemp = 5d;
+    public double lastXPower = 5d;
+
     private static final UUID COFFEE_SERVICE_UUID = UUID.fromString("34881f02-1de5-ca8a-9043-0113c0d05807");
-    //public static final UUID TEMP_UUID = UUID.fromString("25AE1443-05D3-4C5B-8281-93D4E07420CF");
-    //public static final UUID POWER_UUID = UUID.fromString("25AE1442-05D3-4C5B-8281-93D4E07420CF");
-    //public static final UUID POWER_UUID = UUID.fromString("f474541f-83be-4d6d-9358-84dd0882603d");
     public static final UUID POWER_UUID = UUID.fromString("3d608208-dd84-5893-6d4d-be831f5474f4");
     public static final UUID TEMP_UUID = UUID.fromString("783c510c-de26-2ea6-f748-215e7c2a1e7e");
     public static final UUID TEMP_REF_UUID = UUID.fromString("3f3dd517-e122-5a93-bd4d-f9b62d64c712");
@@ -148,31 +128,39 @@ public class BluetoothHandler {
             ProgressBar bar = mainActivity.findViewById(R.id.tempBar);
 
 
+
                 if (characteristicUUID.equals(TEMP_UUID)) {
                     byte[] charVal = characteristic.getValue();
                     BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
 
                     int i = parser.getIntValue(FORMAT_UINT16);
-                    temp = (float)i;
+                    temp = (float)i/100;
 
 
-                    if(bar != null && homeBinding != null) {
+                    if(bar != null) {
                         bar = mainActivity.findViewById(R.id.tempBar);
                         TextView text = mainActivity.findViewById(R.id.tempText);
+                        Button statusButton = mainActivity.findViewById(R.id.statusButton);
+                        ProgressBar movingProgress = mainActivity.findViewById(R.id.movingProgressBar);
 
                         bar.setProgress((int) temp);
                         text.setText(String.format("%.2f °C", temp));
-                        if(Math.abs(tempRef-temp) > 2) {
-                            homeBinding.statusButton.setBackgroundColor(Color.GREEN);
-                            homeBinding.statusButton.setText("Ready");
+                        if(Math.abs(tempRef-temp) < 2) {
+                            statusButton.setBackgroundColor(Color.GREEN);
+                            statusButton.setText("Ready");
+                            movingProgress.setVisibility(View.GONE);
                         }
                         else {
-                            homeBinding.statusButton.setBackgroundColor(Color.RED);
-                            homeBinding.statusButton.setText("heating");
+                            statusButton.setBackgroundColor(Color.RED);
+                            statusButton.setText("waiting");
+                            movingProgress.setVisibility(View.VISIBLE);
                         }
                     }
                     Log.i(TAG, "onCharacteristicUpdate: new Temp" + temp);
+
+                    lastXTemp += 1d;
+                    tempValues.appendData(new DataPoint(lastXTemp, temp), true, 200);
 
 
                 }
@@ -190,14 +178,15 @@ public class BluetoothHandler {
 
                     ProgressBar progress = mainActivity.findViewById(R.id.powerBar);
                     TextView progressText = mainActivity.findViewById(R.id.powerText);
+                    lastXPower += 1d;
+                    powerValues2.appendData(new DataPoint(lastXPower, power), true, 200);
 
                     if(bar != null) {
                     progress.setProgress((int) power);
                     progressText.setText(String.format("%.2f%%", power));
                     Log.i(TAG, "onCharacteristicUpdate: new power" + power);
-                    //graph2LastXValue += 1d;
-                    //tempValues.appendData(new DataPoint(graph2LastXValue, temp), true, 70);
-                    //tmpValuesDataPoint.add(new DataPoint(graph2LastXValue, temp));
+
+
                     }
 
                 }
@@ -206,7 +195,7 @@ public class BluetoothHandler {
                     BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
                     int i = parser.getIntValue(FORMAT_UINT16);
-                    Kp = (double)i/100;
+                    Kp = (double)i;
                     Log.i(TAG, "onCharacteristicUpdate: New Kp" + String.valueOf(Kp));
 
                 }
@@ -222,7 +211,7 @@ public class BluetoothHandler {
                     byte[] buffer = characteristic.getValue();
                     BluetoothBytesParser parser = new BluetoothBytesParser(value);
                     int i = parser.getIntValue(FORMAT_UINT16);
-                    Kd = (double)i/100;
+                    Kd = (double)i;
                     Log.i(TAG, "onCharacteristicUpdate: New Kd" + String.valueOf(Kd));
                 }
 
@@ -360,8 +349,7 @@ public class BluetoothHandler {
 
     private static byte[] intToBytes(final int data) {
         return new byte[] {
-                //(byte)((data >> 24) & 0xff),
-                //(byte)((data >> 16) & 0xff),
+
                 (byte)((data >> 0) & 0xff),
                 (byte)((data >> 8) & 0xff),
         };
@@ -411,7 +399,7 @@ public class BluetoothHandler {
 
         //mainBinding binding = mainBinding.bind(rootView);
         //mainBinding = mainBinding.inflate(layoutInflater, viewGroup, false);
-        tempValues = new LineGraphSeries<>();
+
         handler.postDelayed(new Runnable() {
 
 
