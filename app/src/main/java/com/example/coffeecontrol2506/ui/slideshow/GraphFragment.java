@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,13 +13,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.coffeecontrol2506.databinding.FragmentSlideshowBinding;
-import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.Random;
 
-public class SlideshowFragment extends Fragment {
+public class GraphFragment extends Fragment {
 
     private FragmentSlideshowBinding binding;
     private final Handler mHandler = new Handler();
@@ -47,8 +44,8 @@ public class SlideshowFragment extends Fragment {
         }
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        SlideshowViewModel slideshowViewModel =
-                new ViewModelProvider(this).get(SlideshowViewModel.class);
+        GraphViewModel slideshowViewModel =
+                new ViewModelProvider(this).get(GraphViewModel.class);
         coffeeLeHandler =  com.example.coffeecontrol2506.BluetoothHandler.getInstance(this.getContext());
         coffeeLeHandler.resetNotify();
         Log.i("TAG", new String(String.valueOf(coffeeLeHandler.CONNECTED)));

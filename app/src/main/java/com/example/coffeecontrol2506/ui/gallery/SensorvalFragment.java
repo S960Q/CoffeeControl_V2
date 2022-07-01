@@ -1,8 +1,6 @@
 package com.example.coffeecontrol2506.ui.gallery;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +12,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.coffeecontrol2506.databinding.FragmentGalleryBinding;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
-import java.util.Random;
 
 public class SensorvalFragment extends Fragment {
 
@@ -152,8 +145,8 @@ public class SensorvalFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        GalleryViewModel galleryViewModel =
-                new ViewModelProvider(this).get(GalleryViewModel.class);
+        SensorvalViewModel galleryViewModel =
+                new ViewModelProvider(this).get(SensorvalViewModel.class);
         coffeeLeHandler =  com.example.coffeecontrol2506.BluetoothHandler.getInstance(this.getContext());
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

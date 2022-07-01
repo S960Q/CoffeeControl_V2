@@ -1,16 +1,16 @@
-package com.example.coffeecontrol2506.ui.slideshow;
+package com.example.coffeecontrol2506.ui.gallery;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class SlideshowViewModel extends ViewModel {
+public class SensorvalViewModel extends ViewModel {
 
     private final MutableLiveData<String> mText;
 
-    public SlideshowViewModel() {
+    public SensorvalViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is slideshow fragment");
+        //mText.setValue("This is gallery fragment");
     }
 
     public LiveData<String> getText() {
